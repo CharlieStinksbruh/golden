@@ -19,134 +19,13 @@ import {
   TrendingDown,
   Activity
 } from 'lucide-react';
+import { realPageSpeedService, PageSpeedResult } from '../../services/realPageSpeedService';
 
 const PageSpeedPage = () => {
   const [url, setUrl] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState('desktop');
-
-  const speedResults = {
-    desktop: {
-      score: 87,
-      fcp: 1.2,
-      lcp: 2.1,
-      fid: 45,
-      cls: 0.08,
-      ttfb: 0.6,
-      si: 2.3
-    },
-    mobile: {
-      score: 72,
-      fcp: 1.8,
-      lcp: 3.2,
-      fid: 78,
-      cls: 0.12,
-      ttfb: 0.9,
-      si: 3.1
-    }
-  };
-
-  const currentResults = speedResults[selectedDevice];
-
-  const opportunities = [
-    {
-      title: "Eliminate render-blocking resources",
-      impact: "High",
-      savings: "1.2s",
-      description: "Resources are blocking the first paint of your page",
-      type: "critical"
-    },
-    {
-      title: "Properly size images",
-      impact: "Medium",
-      savings: "0.8s",
-      description: "Serve images that are appropriately-sized",
-      type: "warning"
-    },
-    {
-      title: "Enable text compression",
-      impact: "Medium",
-      savings: "0.5s",
-      description: "Text-based resources should be served with compression",
-      type: "warning"
-    },
-    {
-      title: "Reduce unused CSS",
-      impact: "Low",
-      savings: "0.3s",
-      description: "Reduce unused rules from stylesheets",
-      type: "info"
-    },
-    {
-      title: "Minify JavaScript",
-      impact: "Low",
-      savings: "0.2s",
-      description: "Minifying JavaScript files can reduce payload sizes",
-      type: "info"
-    }
-  ];
-
-  const diagnostics = [
-    {
-      title: "Avoid enormous network payloads",
-      value: "2.1 MB",
-      status: "warning",
-      description: "Large network payloads cost users real money"
-    },
-    {
-      title: "Serve images in next-gen formats",
-      value: "15 images",
-      status: "info",
-      description: "WebP and AVIF provide better compression"
-    },
-    {
-      title: "Efficiently encode images",
-      value: "8 images",
-      status: "warning",
-      description: "Optimized images load faster and consume less data"
-    },
-    {
-      title: "Preload key requests",
-      value: "3 resources",
-      status: "info",
-      description: "Consider using <link rel=preload> for key resources"
-    }
-  ];
-
-  const coreWebVitals = [
-    {
-      name: "First Contentful Paint",
-      value: currentResults.fcp,
-      unit: "s",
-      threshold: 1.8,
-      status: currentResults.fcp <= 1.8 ? "good" : currentResults.fcp <= 3.0 ? "needs-improvement" : "poor",
-      description: "Time until first text or image is painted"
-    },
-    {
-      name: "Largest Contentful Paint",
-      value: currentResults.lcp,
-      unit: "s",
-      threshold: 2.5,
-      status: currentResults.lcp <= 2.5 ? "good" : currentResults.lcp <= 4.0 ? "needs-improvement" : "poor",
-      description: "Time until largest text or image is painted"
-    },
-    {
-      name: "First Input Delay",
-      value: currentResults.fid,
-      unit: "ms",
-      threshold: 100,
-      status: currentResults.fid <= 100 ? "good" : currentResults.fid <= 300 ? "needs-improvement" : "poor",
-      description: "Time from first user interaction to browser response"
-    },
-    {
-      name: "Cumulative Layout Shift",
-      value: currentResults.cls,
-      unit: "",
-      threshold: 0.1,
-      status: currentResults.cls <= 0.1 ? "good" : currentResults.cls <= 0.25 ? "needs-improvement" : "poor",
-      description: "Measure of visual stability during page load"
-    }
-  ];
+  const [results, setResults] = useState<PageSpeedResult | null>(null);
 
   const getScoreColor = (score) => {
     if (score >= 90) return 'text-green-600';
@@ -183,10 +62,119 @@ const PageSpeedPage = () => {
 
   const handleStartTest = () => {
     setIsRunning(true);
-    setTimeout(() => {
-      setIsRunning(false);
-    }, 3000);
+    
+    realPageSpeedService.analyzePageSpeed(url, selectedDevice as 'desktop' | 'mobile')
+      .then(result => {
+        setResults(result);
+        setIsRunning(false);
+      })
+      .catch(error => {
+        console.error('Page speed analysis failed:', error);
+        setIsRunning(false);
+      });
   };
+
+  // Don't render results if we don't have any yet
+  if (!results) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Page Speed Analyzer</h1>
+              <p className="text-gray-600">
+                Analyze your website's performance and get actionable recommendations
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Speed Test Controls */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-white rounded-xl shadow-lg p-6 mb-8"
+          >
+            <div className="flex flex-col lg:flex-row gap-4 items-end">
+              <div className="flex-1">
+                <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
+                  Website URL
+                </label>
+                <input
+                  type="url"
+                  id="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Device</label>
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setSelectedDevice('desktop')}
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      selectedDevice === 'desktop'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Monitor className="w-4 h-4 mr-2" />
+                    Desktop
+                  </button>
+                  <button
+                    onClick={() => setSelectedDevice('mobile')}
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      selectedDevice === 'mobile'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Smartphone className="w-4 h-4 mr-2" />
+                    Mobile
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={handleStartTest}
+                  disabled={!url || isRunning}
+                  className="flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  {isRunning ? 'Analyzing...' : 'Analyze'}
+                </button>
+                <button className="flex items-center px-6 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors">
+                  <Download className="w-5 h-5 mr-2" />
+                  Export
+                </button>
+              </div>
+            </div>
+          </motion.div>
+
+          {isRunning && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl shadow-lg p-8 text-center"
+            >
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Analyzing Page Speed...</h3>
+              <p className="text-gray-600">This may take a few moments while we analyze your website's performance.</p>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -281,16 +269,16 @@ const PageSpeedPage = () => {
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Performance Score</h2>
           <div className="flex justify-center items-center mb-6">
-            <div className={`w-32 h-32 rounded-full flex items-center justify-center ${getScoreBackground(currentResults.score)}`}>
-              <span className={`text-4xl font-bold ${getScoreColor(currentResults.score)}`}>
-                {currentResults.score}
+            <div className={`w-32 h-32 rounded-full flex items-center justify-center ${getScoreBackground(results.score)}`}>
+              <span className={`text-4xl font-bold ${getScoreColor(results.score)}`}>
+                {results.score}
               </span>
             </div>
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            {currentResults.score >= 90 
+            {results.score >= 90 
               ? "Excellent! Your page loads fast and provides a great user experience."
-              : currentResults.score >= 50
+              : results.score >= 50
               ? "Good performance, but there are opportunities for improvement."
               : "Poor performance. Your page needs significant optimization to improve user experience."
             }
@@ -306,7 +294,7 @@ const PageSpeedPage = () => {
         >
           <h3 className="text-xl font-semibold text-gray-900 mb-6">Core Web Vitals</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {coreWebVitals.map((vital, index) => (
+            {results.coreWebVitals.map((vital, index) => (
               <div key={index} className="text-center">
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 ${
                   vital.status === 'good' ? 'bg-green-100' :
@@ -347,7 +335,7 @@ const PageSpeedPage = () => {
               </h3>
             </div>
             <div className="p-6 space-y-4">
-              {opportunities.map((opportunity, index) => (
+              {results.opportunities.map((opportunity, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="font-medium text-gray-900">{opportunity.title}</h4>
@@ -380,7 +368,7 @@ const PageSpeedPage = () => {
               </h3>
             </div>
             <div className="p-6 space-y-4">
-              {diagnostics.map((diagnostic, index) => (
+              {results.diagnostics.map((diagnostic, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="font-medium text-gray-900">{diagnostic.title}</h4>
@@ -414,12 +402,12 @@ const PageSpeedPage = () => {
             
             <div className="space-y-6 ml-8">
               {[
-                { time: '0.6s', event: 'Time to First Byte (TTFB)', status: 'good' },
-                { time: '1.2s', event: 'First Contentful Paint (FCP)', status: 'good' },
-                { time: '2.1s', event: 'Largest Contentful Paint (LCP)', status: 'good' },
-                { time: '2.3s', event: 'Speed Index (SI)', status: 'needs-improvement' },
-                { time: '45ms', event: 'First Input Delay (FID)', status: 'good' },
-                { time: '0.08', event: 'Cumulative Layout Shift (CLS)', status: 'good' }
+                { time: `${results.metrics.ttfb}s`, event: 'Time to First Byte (TTFB)', status: results.metrics.ttfb <= 0.6 ? 'good' : 'needs-improvement' },
+                { time: `${results.metrics.fcp}s`, event: 'First Contentful Paint (FCP)', status: results.metrics.fcp <= 1.8 ? 'good' : 'needs-improvement' },
+                { time: `${results.metrics.lcp}s`, event: 'Largest Contentful Paint (LCP)', status: results.metrics.lcp <= 2.5 ? 'good' : 'needs-improvement' },
+                { time: `${results.metrics.si}s`, event: 'Speed Index (SI)', status: results.metrics.si <= 3.4 ? 'good' : 'needs-improvement' },
+                { time: `${results.metrics.fid}ms`, event: 'First Input Delay (FID)', status: results.metrics.fid <= 100 ? 'good' : 'needs-improvement' },
+                { time: `${results.metrics.cls}`, event: 'Cumulative Layout Shift (CLS)', status: results.metrics.cls <= 0.1 ? 'good' : 'needs-improvement' }
               ].map((item, index) => (
                 <div key={index} className="relative flex items-center">
                   <div className={`absolute -left-10 w-4 h-4 rounded-full border-2 border-white ${

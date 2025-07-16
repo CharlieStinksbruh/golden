@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Play, Pause, Download, AlertTriangle, CheckCircle, Clock, Globe, BarChart3, Link as LinkIcon, Trash2, Eye, RefreshCw } from 'lucide-react';
-import { crawlerService, CrawlResult } from '../../services/crawlerService';
+import { realCrawlerService, CrawlResult } from '../../services/realCrawlerService';
 
 const CrawlerPage = () => {
   const [url, setUrl] = useState('');
@@ -15,7 +15,7 @@ const CrawlerPage = () => {
 
   useEffect(() => {
     // Load crawl history on component mount
-    setCrawlHistory(crawlerService.getAllCrawls());
+    setCrawlHistory(realCrawlerService.getAllCrawls());
   }, []);
 
   useEffect(() => {
@@ -23,11 +23,11 @@ const CrawlerPage = () => {
     
     if (currentCrawl && currentCrawl.status === 'running') {
       interval = setInterval(() => {
-        const updated = crawlerService.getCrawlStatus(currentCrawl.id);
+        const updated = realCrawlerService.getCrawlStatus(currentCrawl.id);
         if (updated) {
           setCurrentCrawl(updated);
           if (updated.status !== 'running') {
-            setCrawlHistory(crawlerService.getAllCrawls());
+            setCrawlHistory(realCrawlerService.getAllCrawls());
           }
         }
       }, 1000);
@@ -42,8 +42,8 @@ const CrawlerPage = () => {
     if (!url) return;
     
     try {
-      const crawlId = await crawlerService.startCrawl(url, crawlOptions);
-      const crawlResult = crawlerService.getCrawlStatus(crawlId);
+      const crawlId = await realCrawlerService.startCrawl(url, crawlOptions);
+      const crawlResult = realCrawlerService.getCrawlStatus(crawlId);
       setCurrentCrawl(crawlResult);
     } catch (error) {
       console.error('Failed to start crawl:', error);
@@ -58,8 +58,8 @@ const CrawlerPage = () => {
   };
 
   const deleteCrawl = (crawlId: string) => {
-    crawlerService.deleteCrawl(crawlId);
-    setCrawlHistory(crawlerService.getAllCrawls());
+    realCrawlerService.deleteCrawl(crawlId);
+    setCrawlHistory(realCrawlerService.getAllCrawls());
     if (currentCrawl?.id === crawlId) {
       setCurrentCrawl(null);
     }
@@ -230,6 +230,10 @@ const CrawlerPage = () => {
                 <div className="text-xl sm:text-2xl font-bold text-yellow-600">{currentCrawl.warnings.length}</div>
                 <div className="text-gray-600">Warnings</div>
               </div>
+              <div className="text-center">
+                <div className="text-xl sm:text-2xl font-bold text-green-600">{currentCrawl.seoScore}</div>
+                <div className="text-gray-600">SEO Score</div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -287,7 +291,7 @@ const CrawlerPage = () => {
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Crawl History</h3>
             <button
-              onClick={() => setCrawlHistory(crawlerService.getAllCrawls())}
+              onClick={() => setCrawlHistory(realCrawlerService.getAllCrawls())}
               className="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
               <RefreshCw className="w-4 h-4 mr-1" />

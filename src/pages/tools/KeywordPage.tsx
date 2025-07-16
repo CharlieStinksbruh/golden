@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, TrendingUp, TrendingDown, Target, BarChart3, Eye, Download, Plus, Trash2 } from 'lucide-react';
-import { keywordService, KeywordData, KeywordRanking } from '../../services/keywordService';
+import { realKeywordService, KeywordData, KeywordRanking } from '../../services/realKeywordService';
 
 const KeywordPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,7 +18,7 @@ const KeywordPage = () => {
   const loadTrackedKeywords = async () => {
     setIsLoading(true);
     try {
-      const rankings = await keywordService.getKeywordRankings('goldchicken.com');
+      const rankings = await realKeywordService.getKeywordRankings('goldchicken.com');
       setTrackedKeywords(rankings);
     } catch (error) {
       console.error('Failed to load tracked keywords:', error);
@@ -32,7 +32,7 @@ const KeywordPage = () => {
     
     setIsSearching(true);
     try {
-      const results = await keywordService.searchKeywords(searchTerm, {
+      const results = await realKeywordService.searchKeywords(searchTerm, {
         location: 'United States',
         language: 'en',
         includeQuestions: true
@@ -47,7 +47,7 @@ const KeywordPage = () => {
 
   const trackKeyword = async (keyword: string) => {
     try {
-      const ranking = await keywordService.trackKeyword(keyword, 'goldchicken.com', {
+      const ranking = await realKeywordService.trackKeyword(keyword, 'goldchicken.com', {
         location: 'United States',
         device: 'desktop'
       });
