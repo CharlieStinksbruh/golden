@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import DataErrorDisplay from '../components/DataErrorDisplay';
+import { realDataService } from '../services/realDataService';
 import { 
   Search, 
   BarChart3, 
@@ -43,6 +45,7 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const [selectedTimeframe, setSelectedTimeframe] = useState('7d');
   const [selectedProject, setSelectedProject] = useState('all');
+  const [dataErrors, setDataErrors] = useState([]);
 
   // Enhanced data with more comprehensive metrics
   const trafficData = [
@@ -279,6 +282,19 @@ const DashboardPage = () => {
     );
   }
 
+  // Add note about real data limitations
+  const realDataNote = (
+    <div className="mb-6">
+      <DataErrorDisplay
+        error={{
+          type: 'cors',
+          message: 'Dashboard currently shows simulated data. Real website data cannot be fetched due to browser security restrictions.',
+          url: 'dashboard'
+        }}
+        className="bg-blue-50 border-blue-200"
+      />
+    </div>
+  );
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -329,6 +345,8 @@ const DashboardPage = () => {
             </div>
           </motion.div>
         </div>
+
+        {realDataNote}
 
         {/* Quick Actions */}
         <motion.div

@@ -33,3 +33,13 @@ export const getDomainFromUrl = (url: string): string => {
     return '';
   }
 };
+
+export const extractDomain = (url: string): string => {
+  try {
+    const normalizedUrl = normalizeUrl(url);
+    const urlObj = new URL(normalizedUrl);
+    return urlObj.hostname.replace('www.', '');
+  } catch {
+    return url;
+  }
+};
