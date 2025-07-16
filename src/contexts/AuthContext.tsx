@@ -5,6 +5,11 @@ interface User {
   email: string;
   name: string;
   plan: 'free' | 'starter' | 'professional' | 'enterprise';
+  role: 'user' | 'admin';
+  trialEndsAt?: string;
+  subscriptionStatus: 'active' | 'cancelled' | 'expired' | 'trial';
+  createdAt: string;
+  lastLoginAt: string;
 }
 
 interface AuthContextType {
@@ -13,6 +18,8 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,11 +51,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Check for admin credentials
+    const isAdminLogin = email === 'admin@goldchicken.com' && password === 'admin123';
+    
     const mockUser: User = {
-      id: '1',
+      id: isAdminLogin ? 'admin-1' : '1',
       email,
-      name: email.split('@')[0],
-      plan: 'professional'
+      name: isAdminLogin ? 'Admin User' : email.split('@')[0],
+      plan: isAdminLogin ? 'enterprise' : 'professional',
+      role: isAdminLogin ? 'admin' : 'user',
+      subscriptionStatus: 'active',
+      createdAt: '2024-01-01T00:00:00Z',
+      lastLoginAt: new Date().toISOString()
     };
     
     setUser(mockUser);
@@ -60,10 +74,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const mockUser: User = {
-      id: '1',
+      id: Date.now().toString(),
       email,
       name,
-      plan: 'free'
+      plan: 'free',
+      role: 'user',
+      subscriptionStatus: 'trial',
+      trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString()
     };
     
     setUser(mockUser);
@@ -75,12 +94,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem('goldChickenUser');
   };
 
+  const updateUser = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('goldChickenUser', JSON.stringify(updatedUser));
+    }
+  };
+
   const value = {
     user,
     login,
     signup,
     logout,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    isAdmin: user?.role === 'admin',
+    updateUser
   };
 
   return (

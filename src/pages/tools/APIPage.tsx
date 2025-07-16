@@ -167,13 +167,13 @@ print(response.json())`
     { name: 'Avg Response', value: '245ms', change: '-12ms', icon: <Clock className="w-6 h-6 text-purple-500" /> }
   ];
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const getMethodColor = (method) => {
+  const getMethodColor = (method: string) => {
     switch (method) {
       case 'GET': return 'text-green-600 bg-green-100';
       case 'POST': return 'text-blue-600 bg-blue-100';
@@ -186,9 +186,9 @@ print(response.json())`
   const renderOverviewTab = () => (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="p-2 bg-gray-50 rounded-lg">
                 {stat.icon}
@@ -200,47 +200,47 @@ print(response.json())`
                 {stat.change}
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
             <div className="text-sm text-gray-600">{stat.name}</div>
           </div>
         ))}
       </div>
 
       {/* Getting Started */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">Getting Started</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-6 border border-gray-200 rounded-lg">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Key className="w-6 h-6 text-blue-600" />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Getting Started</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Key className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
             </div>
-            <h4 className="font-semibold text-gray-900 mb-2">1. Get API Key</h4>
-            <p className="text-sm text-gray-600">Generate your API key from the API Keys tab</p>
+            <h4 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">1. Get API Key</h4>
+            <p className="text-xs sm:text-sm text-gray-600">Generate your API key from the API Keys tab</p>
           </div>
           
-          <div className="text-center p-6 border border-gray-200 rounded-lg">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Code className="w-6 h-6 text-green-600" />
+          <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Code className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
             </div>
-            <h4 className="font-semibold text-gray-900 mb-2">2. Make Request</h4>
-            <p className="text-sm text-gray-600">Use your API key to authenticate requests</p>
+            <h4 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">2. Make Request</h4>
+            <p className="text-xs sm:text-sm text-gray-600">Use your API key to authenticate requests</p>
           </div>
           
-          <div className="text-center p-6 border border-gray-200 rounded-lg">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="w-6 h-6 text-purple-600" />
+          <div className="text-center p-4 sm:p-6 border border-gray-200 rounded-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
             </div>
-            <h4 className="font-semibold text-gray-900 mb-2">3. Get Results</h4>
-            <p className="text-sm text-gray-600">Receive comprehensive SEO data in JSON format</p>
+            <h4 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">3. Get Results</h4>
+            <p className="text-xs sm:text-sm text-gray-600">Receive comprehensive SEO data in JSON format</p>
           </div>
         </div>
       </div>
 
       {/* Quick Example */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4">Quick Example</h3>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Quick Example</h3>
         <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-          <pre className="text-green-400 text-sm">
+          <pre className="text-green-400 text-xs sm:text-sm">
             <code>{`curl -X POST "https://api.goldchicken.com/v1/crawl" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
@@ -254,19 +254,19 @@ print(response.json())`
   const renderEndpointsTab = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">API Endpoints</h3>
         </div>
         
         <div className="divide-y divide-gray-200">
           {apiEndpoints.map((endpoint) => (
-            <div key={endpoint.id} className="p-6 hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedEndpoint(endpoint.id)}>
-              <div className="flex items-center justify-between mb-2">
+            <div key={endpoint.id} className="p-4 sm:p-6 hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedEndpoint(endpoint.id)}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
                 <div className="flex items-center space-x-3">
                   <span className={`px-2 py-1 text-xs font-semibold rounded ${getMethodColor(endpoint.method)}`}>
                     {endpoint.method}
                   </span>
-                  <span className="font-mono text-sm text-gray-900">{endpoint.endpoint}</span>
+                  <span className="font-mono text-sm text-gray-900 break-all">{endpoint.endpoint}</span>
                 </div>
                 <div className="text-sm text-gray-500">{endpoint.rateLimit}</div>
               </div>
@@ -281,10 +281,10 @@ print(response.json())`
 
   const renderKeysTab = () => (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <h3 className="text-lg font-semibold text-gray-900">API Keys</h3>
-          <button className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200">
+          <button className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 text-sm">
             <Plus className="w-4 h-4 mr-2" />
             Generate New Key
           </button>
@@ -293,7 +293,7 @@ print(response.json())`
         <div className="space-y-4">
           {apiKeys.map((key) => (
             <div key={key.id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2">
                 <h4 className="font-medium text-gray-900">{key.name}</h4>
                 <div className="flex items-center space-x-2">
                   <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">
@@ -306,10 +306,10 @@ print(response.json())`
               </div>
               
               <div className="bg-gray-50 rounded p-3 mb-3 flex items-center justify-between">
-                <code className="text-sm text-gray-800 font-mono">
+                <code className="text-sm text-gray-800 font-mono break-all">
                   {showApiKey ? key.key : key.key.replace(/./g, '•')}
                 </code>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 ml-2">
                   <button
                     onClick={() => setShowApiKey(!showApiKey)}
                     className="text-gray-600 hover:text-gray-800"
@@ -325,11 +325,11 @@ print(response.json())`
                 </div>
               </div>
               
-              <div className="flex items-center justify-between text-sm text-gray-600">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-sm text-gray-600 gap-2">
                 <div>
                   <span>Created: {new Date(key.created).toLocaleDateString()}</span>
-                  <span className="mx-2">•</span>
-                  <span>Last used: {key.lastUsed}</span>
+                  <span className="mx-2 hidden sm:inline">•</span>
+                  <span className="block sm:inline">Last used: {key.lastUsed}</span>
                 </div>
                 <div>{key.requests.toLocaleString()} requests</div>
               </div>
@@ -342,7 +342,7 @@ print(response.json())`
 
   const renderPlaygroundTab = () => (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">API Playground</h3>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -354,7 +354,7 @@ print(response.json())`
                 <select
                   value={selectedEndpoint}
                   onChange={(e) => setSelectedEndpoint(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
                 >
                   {apiEndpoints.map((endpoint) => (
                     <option key={endpoint.id} value={endpoint.id}>
@@ -377,7 +377,7 @@ print(response.json())`
                 />
               </div>
               
-              <button className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200">
+              <button className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 text-sm">
                 <Play className="w-4 h-4 mr-2" />
                 Send Request
               </button>
@@ -404,17 +404,17 @@ print(response.json())`
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">API Access</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">API Access</h1>
+            <p className="text-gray-600 text-sm sm:text-base">
               Integrate Gold Chicken's powerful SEO capabilities into your applications
             </p>
           </motion.div>
@@ -429,7 +429,7 @@ print(response.json())`
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors text-sm ${
                       activeTab === tab.id
                         ? 'bg-orange-50 text-orange-700 border border-orange-200'
                         : 'text-gray-600 hover:bg-gray-50'
@@ -456,7 +456,7 @@ print(response.json())`
               {activeTab === 'keys' && renderKeysTab()}
               {activeTab === 'playground' && renderPlaygroundTab()}
               {activeTab === 'docs' && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">API Documentation</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <a href="#" className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
@@ -473,7 +473,7 @@ print(response.json())`
                         <h4 className="font-medium text-gray-900">Code Examples</h4>
                       </div>
                       <p className="text-sm text-gray-600">Sample code in multiple languages</p>
-                    </div>
+                    </a>
                   </div>
                 </div>
               )}
