@@ -52,10 +52,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Check for admin credentials
-    const isAdminLogin = (email === 'admin@goldchicken.com' && password === admin123') || 
-                        (email === 'Charlie' && password === 'admin123') ||
-                        (email === 'Admin' && password === 'Admin123');
-    )
+    const isAdminLogin = (email === 'admin@goldchicken.com' && password === 'admin123') || 
+                        (email === 'Charlie' && password === 'admin123');
     
     const mockUser: User = {
       id: isAdminLogin ? (email === 'Charlie' ? 'charlie-admin' : 'admin-1') : '1',
