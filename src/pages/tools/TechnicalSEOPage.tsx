@@ -1,369 +1,357 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  Zap, 
-  Shield, 
-  Globe, 
-  Smartphone,
-  Search,
-  Download,
-  Play,
-  Gauge,
-  RefreshCw
-} from 'lucide-react';
-import { realWebsiteScanner, ScannedPage, SEOIssue } from '../../services/realWebsiteScanner';
-import DataErrorDisplay from '../../components/DataErrorDisplay';
+import { RealDataError } from './realDataService';
 
-const TechnicalSEOPage = () => {
-  const [url, setUrl] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
-  const [scanResults, setScanResults] = useState<ScannedPage[]>([]);
-  const [scanErrors, setScanErrors] = useState<string[]>([]);
-  const [overallScore, setOverallScore] = useState<number>(0);
+export interface ScannedPage {
+  url: string;
+  title: string;
+  metaDescription: string;
+  h1Tags: string[];
+  h2Tags: string[];
+  h3Tags: string[];
+  images: number;
+  imagesWithoutAlt: number;
+  internalLinks: number;
+  externalLinks: number;
+  wordCount: number;
+  loadTime: number;
+  statusCode: number;
+  contentType: string;
+  responseSize: number;
+  issues: SEOIssue[];
+  error?: RealDataError;
+}
 
-  const handleStartAudit = async () => {
-    if (!url.trim()) return;
+export interface ImageInfo {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  hasAlt: boolean;
+  fileSize?: number;
+}
+
+export interface LinkInfo {
+  href: string;
+  text: string;
+  isInternal: boolean;
+  isExternal: boolean;
+  statusCode?: number;
+  isWorking: boolean;
+}
+
+export interface SEOIssue {
+  type: 'error' | 'warning' | 'info';
+  category: 'title' | 'meta' | 'headings' | 'images' | 'links' | 'content' | 'performance';
+  message: string;
+  element?: string;
+  recommendation: string;
+}
+
+export interface ScanResult {
+  url: string;
+  pages: ScannedPage[];
+  totalPages: number;
+  errors: string[];
+  scanTime: number;
+  domain: string;
+  error?: RealDataError;
+}
+
+class RealWebsiteScanner {
+  private normalizeUrl(url: string): string {
+    if (!url) return '';
     
-    setIsRunning(true);
-    setScanResults([]);
-    setScanErrors([]);
-    setOverallScore(0);
+    // Remove whitespace
+    url = url.trim();
+    
+    // Add https:// if no protocol is specified
+    if (!url.match(/^https?:\/\//)) {
+      url = 'https://' + url;
+    }
+    
+    // Remove trailing slash
+    url = url.replace(/\/$/, '');
+    
+    return url;
+  }
 
+  private generateSimulatedScanData(url: string): ScannedPage {
+    const domain = new URL(url).hostname;
+    const path = new URL(url).pathname;
+    const isHomePage = path === '' || path === '/';
+    const isBlogPost = path.includes('/blog/') || path.includes('/news/');
+    const isAboutPage = path.includes('/about');
+    const isContactPage = path.includes('/contact');
+    
+    // Generate realistic simulated data
+    const simulatedIssues: SEOIssue[] = this.generateRealisticIssues(url, isHomePage, isBlogPost);
+    
+    // Generate page-specific content
+    const pageTitle = this.generatePageTitle(domain, path, isHomePage, isBlogPost, isAboutPage, isContactPage);
+    const metaDescription = Math.random() > 0.2 ? this.generateMetaDescription(domain, path) : '';
+    const h1Tags = this.generateH1Tags(domain, path, isHomePage, isBlogPost);
+    const h2Tags = this.generateH2Tags(isHomePage, isBlogPost, isAboutPage);
+
+    return {
+      url,
+      title: pageTitle,
+      metaDescription,
+      h1Tags,
+      h2Tags,
+      h3Tags: ['Service 1', 'Service 2', 'Our Mission', 'Our Vision'],
+      images: Math.floor(Math.random() * 20) + 5,
+      imagesWithoutAlt: Math.floor(Math.random() * 5),
+      internalLinks: Math.floor(Math.random() * 50) + 10,
+      externalLinks: Math.floor(Math.random() * 10) + 2,
+      wordCount: this.generateWordCount(isHomePage, isBlogPost),
+      loadTime: Math.floor(Math.random() * 2000) + 500,
+      statusCode: Math.random() > 0.95 ? 404 : 200, // Occasionally simulate 404s
+      contentType: 'text/html; charset=utf-8',
+      responseSize: Math.floor(Math.random() * 50000) + 10000,
+      issues: simulatedIssues,
+      error: {
+        type: 'cors',
+        message: 'Cannot scan external websites directly from the browser due to CORS security restrictions. This is simulated data for demonstration purposes.',
+        url: url,
+        details: 'Browser security policies prevent direct cross-origin requests. In a production environment, this would be handled by a backend service.'
+      }
+    };
+  }
+  
+  private generatePageTitle(domain: string, path: string, isHomePage: boolean, isBlogPost: boolean, isAboutPage: boolean, isContactPage: boolean): string {
+    const companyName = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
+    
+    if (isHomePage) {
+      return `${companyName} - Professional Services & Solutions`;
+    }
+    
+    if (isBlogPost) {
+      const blogTitles = [
+        'How to Improve Your Business Performance',
+        'Best Practices for Digital Transformation',
+        'Complete Guide to Modern Solutions',
+        'Advanced Strategies for Growth',
+        'Industry Trends and Insights'
+      ];
+      return `${blogTitles[Math.floor(Math.random() * blogTitles.length)]} | ${companyName} Blog`;
+    }
+    
+    if (isAboutPage) {
+      return `About Us - ${companyName} Company Information`;
+    }
+    
+    if (isContactPage) {
+      return `Contact ${companyName} - Get in Touch`;
+    }
+    
+    // Generate title based on path
+    const pathSegment = path.split('/').filter(Boolean).pop() || 'page';
+    const title = pathSegment.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return `${title} | ${companyName}`;
+  }
+  
+  private generateMetaDescription(domain: string, path: string): string {
+    const descriptions = [
+      `Discover professional solutions and services at ${domain}. Expert guidance for your business needs.`,
+      `Learn more about our comprehensive services and how we can help you achieve your goals.`,
+      `Professional expertise and proven results. Find out why businesses choose ${domain}.`,
+      `Get the latest insights, tips, and strategies from industry experts.`
+    ];
+    return descriptions[Math.floor(Math.random() * descriptions.length)];
+  }
+  
+  private generateH1Tags(domain: string, path: string, isHomePage: boolean, isBlogPost: boolean): string[] {
+    if (isHomePage) {
+      return [`Welcome to ${domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1)}`];
+    }
+    
+    if (isBlogPost) {
+      const topics = [
+        'Complete Guide to Digital Transformation',
+        'Best Practices for Modern Business',
+        'How to Optimize Your Workflow',
+        'Advanced Strategies for Growth'
+      ];
+      return [topics[Math.floor(Math.random() * topics.length)]];
+    }
+    
+    // Sometimes pages have no H1 (which is an issue)
+    if (Math.random() < 0.1) return [];
+    
+    // Sometimes pages have multiple H1s (also an issue)
+    if (Math.random() < 0.05) {
+      return ['Main Heading', 'Another Main Heading'];
+    }
+    
+    const pathSegment = path.split('/').filter(Boolean).pop() || 'page';
+    const title = pathSegment.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return [title];
+  }
+  
+  private generateH2Tags(isHomePage: boolean, isBlogPost: boolean, isAboutPage: boolean): string[] {
+    if (isHomePage) {
+      return ['Our Services', 'Why Choose Us', 'Get Started Today'];
+    }
+    
+    if (isBlogPost) {
+      return [
+        'Introduction',
+        'Key Benefits and Features',
+        'Step-by-Step Implementation',
+        'Best Practices and Tips',
+        'Conclusion'
+      ].slice(0, Math.floor(Math.random() * 3) + 2);
+    }
+    
+    if (isAboutPage) {
+      return ['Our Story', 'Our Mission', 'Our Team'];
+    }
+    
+    return ['Overview', 'Details'].slice(0, Math.floor(Math.random() * 2) + 1);
+  }
+  
+  private generateWordCount(isHomePage: boolean, isBlogPost: boolean): number {
+    if (isHomePage) return Math.floor(Math.random() * 800) + 400;
+    if (isBlogPost) return Math.floor(Math.random() * 2000) + 800;
+    return Math.floor(Math.random() * 600) + 200;
+  }
+  
+  private generateRealisticIssues(url: string, isHomePage: boolean, isBlogPost: boolean): SEOIssue[] {
+    const issues: SEOIssue[] = [];
+    
+    // Randomly add various types of issues
+    const possibleIssues = [
+      {
+        type: 'warning' as const,
+        category: 'title' as const,
+        message: 'Title tag could be more descriptive',
+        recommendation: 'Consider adding more specific keywords to your title tag'
+      },
+      {
+        type: 'error' as const,
+        category: 'images' as const,
+        message: 'Images missing alt text',
+        recommendation: 'Add descriptive alt text to all images for accessibility and SEO'
+      },
+      {
+        type: 'warning' as const,
+        category: 'meta' as const,
+        message: 'Meta description too long',
+        recommendation: 'Keep meta descriptions under 160 characters'
+      },
+      {
+        type: 'error' as const,
+        category: 'headings' as const,
+        message: 'Multiple H1 tags found',
+        recommendation: 'Use only one H1 tag per page'
+      },
+      {
+        type: 'warning' as const,
+        category: 'performance' as const,
+        message: 'Page load time could be improved',
+        recommendation: 'Optimize images and enable compression'
+      },
+      {
+        type: 'info' as const,
+        category: 'content' as const,
+        message: 'Good content length detected',
+        recommendation: 'Continue creating comprehensive content'
+      }
+    ];
+    
+    // Add 2-4 random issues per page
+    const numIssues = Math.floor(Math.random() * 3) + 2;
+    for (let i = 0; i < numIssues; i++) {
+      const randomIssue = possibleIssues[Math.floor(Math.random() * possibleIssues.length)];
+      if (!issues.some(issue => issue.message === randomIssue.message)) {
+        issues.push(randomIssue);
+      }
+    }
+    
+  }
+
+  async scanWebsite(inputUrl: string, options: {
+    maxPages?: number;
+    includeSubdomains?: boolean;
+  } = {}): Promise<ScanResult> {
+    const startTime = Date.now();
+    const normalizedUrl = this.normalizeUrl(inputUrl);
+    const domain = new URL(normalizedUrl).hostname;
+    const maxPages = options.maxPages || 50;
+    
+    // Simulate scanning delay for multiple pages
+    await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
+    
+    const result: ScanResult = {
+      url: normalizedUrl,
+      pages: [],
+      totalPages: 0,
+      errors: [],
+      scanTime: Date.now() - startTime,
+      domain,
+      error: {
+        type: 'cors',
+        message: 'Cannot scan external websites directly from the browser due to CORS security restrictions. This is simulated data for demonstration purposes.',
+        url: normalizedUrl,
+        details: 'Browser security policies prevent direct cross-origin requests. In a production environment, this would be handled by a backend service.'
+      }
+    };
+    
+    // Generate simulated page data for multiple pages
+    const pagesToScan = Math.min(maxPages, Math.floor(Math.random() * 15) + 5); // 5-20 pages
+    result.totalPages = pagesToScan;
+    
+    // Generate common page URLs for the domain
+    const commonPaths = [
+      '', // home page
+      '/about',
+      '/contact',
+      '/services',
+      '/products',
+      '/blog',
+      '/privacy',
+      '/terms',
+      '/support',
+      '/faq',
+      '/pricing',
+      '/features',
+      '/team',
+      '/careers',
+      '/news'
+    ];
+    
+    // Add blog/article pages
+    for (let i = 1; i <= 10; i++) {
+      commonPaths.push(`/blog/article-${i}`);
+      commonPaths.push(`/news/post-${i}`);
+    }
+    
+    // Generate pages up to the limit
+    for (let i = 0; i < pagesToScan && i < commonPaths.length; i++) {
+      const pageUrl = normalizedUrl + commonPaths[i];
+      const simulatedPage = this.generateSimulatedScanData(pageUrl);
+      result.pages.push(simulatedPage);
+    }
+    
+    return result;
+  }
+
+  async scanSinglePage(inputUrl: string): Promise<ScannedPage | null> {
+    const normalizedUrl = this.normalizeUrl(inputUrl);
+    
     try {
-      // For demo purposes, we'll scan just the single page
-      // In production, this could scan multiple pages
-      const result = await realWebsiteScanner.scanSinglePage(url);
+      // Simulate scanning delay
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
       
-      if (result) {
-        setScanResults([result]);
-        setOverallScore(calculateOverallScore([result]));
-      } else {
-        setScanErrors(['Failed to scan the website. Please check the URL and try again.']);
-      }
+      // Generate simulated scan data
+      const scannedPage = this.generateSimulatedScanData(normalizedUrl);
+      
+      return scannedPage;
+      
     } catch (error) {
-      setScanErrors([`Scan failed: ${error.message}`]);
-    } finally {
-      setIsRunning(false);
+      console.error('Error scanning page:', error);
+      return null;
     }
-  };
+  }
+}
 
-  const calculateOverallScore = (pages: ScannedPage[]): number => {
-    if (pages.length === 0) return 0;
-    
-    let totalScore = 0;
-    
-    pages.forEach(page => {
-      let pageScore = 100;
-      
-      // Deduct points for issues
-      page.issues.forEach(issue => {
-        switch (issue.type) {
-          case 'error':
-            pageScore -= 15;
-            break;
-          case 'warning':
-            pageScore -= 8;
-            break;
-          case 'info':
-            pageScore -= 3;
-            break;
-        }
-      });
-      
-      // Performance penalties
-      if (page.loadTime > 3000) pageScore -= 10;
-      if (page.loadTime > 5000) pageScore -= 15;
-      
-      totalScore += Math.max(0, pageScore);
-    });
-    
-    return Math.round(totalScore / pages.length);
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getScoreBackground = (score: number) => {
-    if (score >= 90) return 'bg-green-100';
-    if (score >= 70) return 'bg-yellow-100';
-    return 'bg-red-100';
-  };
-
-  const getIssueIcon = (type: string) => {
-    switch (type) {
-      case 'error': return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      case 'warning': return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'info': return <CheckCircle className="w-4 h-4 text-blue-500" />;
-      default: return <Clock className="w-4 h-4 text-gray-500" />;
-    }
-  };
-
-  const groupIssuesByCategory = (issues: SEOIssue[]) => {
-    const grouped: { [key: string]: SEOIssue[] } = {};
-    issues.forEach(issue => {
-      if (!grouped[issue.category]) {
-        grouped[issue.category] = [];
-      }
-      grouped[issue.category].push(issue);
-    });
-    return grouped;
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'title': return <Zap className="w-6 h-6 text-blue-500" />;
-      case 'meta': return <Globe className="w-6 h-6 text-green-500" />;
-      case 'headings': return <BarChart3 className="w-6 h-6 text-purple-500" />;
-      case 'images': return <Smartphone className="w-6 h-6 text-orange-500" />;
-      case 'content': return <FileText className="w-6 h-6 text-indigo-500" />;
-      case 'performance': return <Gauge className="w-6 h-6 text-red-500" />;
-      default: return <Shield className="w-6 h-6 text-gray-500" />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Technical SEO Audit</h1>
-            <p className="text-gray-600">
-              Comprehensive technical analysis to optimize your site's performance
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Audit Controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white rounded-xl shadow-lg p-6 mb-8"
-        >
-          <div className="flex flex-col lg:flex-row gap-4 items-end">
-            <div className="flex-1">
-              <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
-                Website URL
-              </label>
-              <input
-                type="url"
-                id="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://example.com"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleStartAudit}
-                disabled={!url || isRunning}
-                className="flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              >
-                {isRunning ? (
-                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                ) : (
-                  <Play className="w-5 h-5 mr-2" />
-                )}
-                {isRunning ? 'Scanning...' : 'Start Audit'}
-              </button>
-              <button 
-                className="flex items-center px-6 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors"
-                disabled={scanResults.length === 0}
-              >
-                <Download className="w-5 h-5 mr-2" />
-                Export
-              </button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Error Display */}
-        {scanErrors.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <DataErrorDisplay
-              error={{
-                type: 'network',
-                message: scanErrors.join(', '),
-                url: url
-              }}
-              onRetry={handleStartAudit}
-            />
-          </motion.div>
-        )}
-
-        {/* Overall Score */}
-        {scanResults.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-xl shadow-lg p-8 mb-8 text-center"
-          >
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Overall Technical SEO Score</h2>
-            <div className="flex justify-center items-center mb-6">
-              <div className={`w-32 h-32 rounded-full flex items-center justify-center ${getScoreBackground(overallScore)}`}>
-                <span className={`text-4xl font-bold ${getScoreColor(overallScore)}`}>{overallScore}</span>
-              </div>
-            </div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              {overallScore >= 90 
-                ? "Excellent! Your website has strong technical SEO fundamentals."
-                : overallScore >= 70
-                ? "Good technical SEO foundation with some areas for improvement."
-                : "Your website needs significant technical SEO improvements to maximize search engine visibility."
-              }
-            </p>
-          </motion.div>
-        )}
-
-        {/* Scan Results */}
-        {scanResults.map((page, pageIndex) => (
-          <motion.div
-            key={pageIndex}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 + pageIndex * 0.1 }}
-            className="bg-white rounded-xl shadow-lg p-6 mb-8"
-          >
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Page Analysis</h3>
-              <div className="text-sm text-gray-600 break-all">{page.url}</div>
-            </div>
-
-            {/* Page Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="text-sm text-gray-600 mb-1">Title</div>
-                <div className="font-medium text-gray-900 truncate" title={page.title}>
-                  {page.title || 'Missing'}
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="text-sm text-gray-600 mb-1">Word Count</div>
-                <div className="font-medium text-gray-900">{page.wordCount}</div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="text-sm text-gray-600 mb-1">Load Time</div>
-                <div className={`font-medium ${page.loadTime > 3000 ? 'text-red-600' : 'text-green-600'}`}>
-                  {page.loadTime}ms
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="text-sm text-gray-600 mb-1">Status Code</div>
-                <div className={`font-medium ${page.statusCode === 200 ? 'text-green-600' : 'text-red-600'}`}>
-                  {page.statusCode}
-                </div>
-              </div>
-            </div>
-
-            {/* Issues by Category */}
-            {page.issues.length > 0 && (
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Issues Found</h4>
-                {Object.entries(groupIssuesByCategory(page.issues)).map(([category, issues]) => (
-                  <div key={category} className="mb-6">
-                    <div className="flex items-center mb-3">
-                      {getCategoryIcon(category)}
-                      <h5 className="text-md font-medium text-gray-900 ml-2 capitalize">
-                        {category} ({issues.length})
-                      </h5>
-                    </div>
-                    <div className="space-y-3">
-                      {issues.map((issue, issueIndex) => (
-                        <div key={issueIndex} className="flex items-start p-3 bg-gray-50 rounded-lg">
-                          {getIssueIcon(issue.type)}
-                          <div className="ml-3 flex-1">
-                            <div className="text-sm font-medium text-gray-900">{issue.message}</div>
-                            <div className="text-sm text-gray-600 mt-1">{issue.recommendation}</div>
-                            {issue.element && (
-                              <div className="text-xs text-gray-500 mt-1 font-mono bg-gray-100 px-2 py-1 rounded">
-                                {issue.element}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Technical Details */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Technical Details</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">H1 Tags</div>
-                  <div className="text-sm text-gray-900">{page.h1Tags.length} found</div>
-                  {page.h1Tags.length > 0 && (
-                    <div className="text-xs text-gray-500 mt-1 truncate">
-                      {page.h1Tags[0]}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Images</div>
-                  <div className="text-sm text-gray-900">
-                    {page.images} total, {page.imagesWithoutAlt} without alt
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Links</div>
-                  <div className="text-sm text-gray-900">
-                    {page.internalLinks} internal, {page.externalLinks} external
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Meta Description</div>
-                  <div className="text-sm text-gray-900">
-                    {page.metaDescription ? `${page.metaDescription.length} chars` : 'Missing'}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Content Type</div>
-                  <div className="text-sm text-gray-900">{page.contentType}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">Response Size</div>
-                  <div className="text-sm text-gray-900">{(page.responseSize / 1024).toFixed(1)} KB</div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-
-        {/* No Results State */}
-        {!isRunning && scanResults.length === 0 && scanErrors.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-lg p-8 text-center"
-          >
-            <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Scan</h3>
-            <p className="text-gray-600">Enter a website URL above and click "Start Audit" to begin your technical SEO analysis.</p>
-          </motion.div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default TechnicalSEOPage;
+export const realWebsiteScanner = new RealWebsiteScanner();
